@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>KRONOS</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:#080808;color:#d8d8d4;font-family:'DM Sans',-apple-system,sans-serif;font-size:14px;}
+
+/* scrollable content areas only */
+.scroll{overflow-y:auto;overflow-x:hidden;}
+.scroll::-webkit-scrollbar{width:2px;}
+.scroll::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:2px;}
+
+/* Colors */
+:root{
+  --bg:#080808;
+  --s1:#0e0e0e;
+  --s2:#131313;
+  --s3:#181818;
+  --b1:#1f1f1f;
+  --b2:#282828;
+  --b3:#313131;
+  --red:#b5321f;
+  --red2:#d04030;
+  --gold:#b8922a;
+  --teal:#1e8070;
+  --text:#d8d8d4;
+  --g1:#787870;
+  --g2:#454540;
+  --g3:#2a2a26;
+  --font-display:'Syne',sans-serif;
+}
+
+input,select,textarea{font-family:'DM Sans',sans-serif;color:var(--text);}
+input::placeholder,textarea::placeholder{color:var(--g2);}
+input[type=date]::-webkit-calendar-picker-indicator,
+input[type=time]::-webkit-calendar-picker-indicator,
+input[type=datetime-local]::-webkit-calendar-picker-indicator{filter:invert(0.35);cursor:pointer;}
+select{-webkit-appearance:none;appearance:none;}
+button{font-family:'DM Sans',sans-serif;cursor:pointer;}
+
+/* Layout */
+#app{display:flex;height:100vh;width:100vw;overflow:hidden;}
+
+/* Sidebar */
+#sidebar{
+  width:48px;
+  background:var(--s1);
+  border-right:1px solid var(--b1);
+  display:flex;flex-direction:column;
+  align-items:center;
+  padding:20px 0;
+  flex-shrink:0;
+  height:100vh;
+  position:relative;
+  z-index:10;
+  transition:width .18s cubic-bezier(.4,0,.2,1);
+}
+#sidebar.open{width:196px;}
+#sidebar.open .nav-label{opacity:1;}
+#sidebar.open .sidebar-logo{font-size:12px;letter-spacing:.18em;}
+
+.sidebar-logo{
+  font-family:var(--font-display);
+  font-size:14px;font-weight:800;letter-spacing:.22em;
+  color:var(--red);margin-bottom:32px;
+  white-space:nowrap;overflow:hidden;
+  transition:all .18s;cursor:pointer;
+}
+
+.nav-item{
+  width:100%;display:flex;align-items:center;
+  padding:9px 14px;gap:12px;
+  cursor:pointer;color:var(--g2);
+  border-left:1px solid transparent;
+  transition:all .12s;position:relative;
+  white-space:nowrap;overflow:hidden;
+}
+.nav-item:hover{color:var(--g1);background:var(--s2);}
+.nav-item.active{color:var(--text);border-left-color:var(--red);background:var(--s2);}
+.nav-icon{font-size:13px;flex-shrink:0;width:20px;text-align:center;}
+.nav-label{font-size:11px;font-weight:500;opacity:0;transition:opacity .12s;letter-spacing:.04em;text-transform:uppercase;}
+#sidebar.open .nav-label{opacity:1;}
+
+.sidebar-bottom{margin-top:auto;width:100%;}
+.nav-badge{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:var(--red);color:#fff;font-size:9px;font-weight:700;border-radius:4px;padding:1px 5px;min-width:16px;text-align:center;}
+
+/* Main */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* Topbar */
+#topbar{
+  height:48px;
+  background:var(--s1);
+  border-bottom:1px solid var(--b1);
+  display:flex;align-items:center;
+  padding:0 28px;gap:16px;
+  flex-shrink:0;
+}
+.page-title{font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;flex:1;color:var(--g1);}
+.topbar-items{display:flex;align-items:center;gap:10px;}
+.time-display{font-size:12px;font-weight:400;color:var(--g2);letter-spacing:.04em;}
+.xp-pill{background:transparent;border:1px solid var(--b2);border-radius:3px;padding:3px 9px;font-size:10px;font-weight:600;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;}
+.top-btn{width:30px;height:30px;border-radius:4px;background:transparent;border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .12s;color:var(--g2);}
+.top-btn:hover{background:var(--s2);color:var(--g1);}
+.user-chip{display:flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--b1);border-radius:4px;padding:4px 10px;cursor:pointer;transition:all .12s;}
+.user-chip:hover{background:var(--s2);}
+.avatar{width:20px;height:20px;border-radius:3px;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-name{font-size:11px;font-weight:500;letter-spacing:.03em;color:var(--g1);}
+.lang-select{background:transparent;border:1px solid var(--b1);border-radius:3px;padding:3px 7px;font-size:10px;color:var(--g2);outline:none;letter-spacing:.06em;}
+
+/* Content area */
+#content{flex:1;overflow-y:auto;overflow-x:hidden;padding:24px;}
+#content::-webkit-scrollbar{width:3px;}
+#content::-webkit-scrollbar-thumb{background:var(--b2);}
+
+/* Cards */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:6px;padding:16px;}
+.card+.card{margin-top:12px;}
+.card-inner{background:var(--s2);border:1px solid var(--b1);border-radius:5px;padding:12px;}
+
+/* Grid layouts */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+
+/* Section label */
+.section-label{font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--g2);margin-bottom:14px;}
+
+/* Progress */
+.pbar{height:1px;background:var(--b1);border-radius:1px;overflow:hidden;}
+.pbar-fill{height:100%;border-radius:1px;transition:width .3s ease;}
+
+/* KPI */
+.kpi-value{font-family:var(--font-display);font-size:28px;font-weight:700;line-height:1;letter-spacing:-.5px;}
+.kpi-label{font-size:10px;color:var(--g2);margin-top:8px;letter-spacing:.06em;text-transform:uppercase;}
+.kpi-bar{margin-top:14px;}
+.kpi-accent{width:100%;height:1px;position:absolute;top:0;left:0;}
+
+/* Inputs */
+.inp{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:4px;padding:8px 11px;color:var(--text);font-size:13px;outline:none;transition:border-color .12s;}
+.inp:focus{border-color:var(--b3);}
+.inp-label{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--g2);margin-bottom:6px;}
+
+/* Buttons */
+.btn{border:none;border-radius:4px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;transition:all .12s;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-red:hover{background:var(--red2);}
+.btn-ghost{background:transparent;color:var(--g1);border:1px solid var(--b1);}
+.btn-ghost:hover{color:var(--text);border-color:var(--b2);}
+.btn-sm{padding:5px 11px;font-size:10px;}
+.btn:disabled{opacity:.25;cursor:not-allowed;}
+
+/* Tags */
+.tag{display:inline-flex;align-items:center;padding:2px 6px;border-radius:2px;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;}
+
+/* Divider */
+.div{height:1px;background:var(--b1);margin:12px 0;}
+
+/* Checkbox */
+.chk{width:14px;height:14px;border-radius:2px;border:1px solid var(--b2);background:transparent;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .12s;}
+.chk.on{background:var(--red);border-color:var(--red);}
+.chk-dot{width:6px;height:6px;background:#fff;border-radius:1px;}
+
+/* Streak */
+.streak-num{color:var(--gold);font-weight:600;}
+
+/* Habit heatmap small */
+.hmap{display:grid;grid-template-columns:repeat(9,1fr);gap:2px;margin-top:8px;}
+.hmap-cell{aspect-ratio:1;border-radius:1px;background:var(--b1);}
+.hmap-cell.done{background:var(--red);}
+.hmap-cell.today{outline:1px solid var(--g2);outline-offset:1px;}
+
+/* Focus ring */
+.focus-wrap{display:flex;align-items:center;justify-content:center;padding:28px 0;}
+.focus-time{font-family:var(--font-display);font-size:68px;font-weight:700;letter-spacing:-2px;line-height:1;}
+
+/* Board */
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.board-col{background:var(--s1);border:1px solid var(--b1);border-radius:6px;padding:14px;min-height:280px;}
+.board-card{background:var(--s2);border:1px solid var(--b1);border-radius:5px;padding:11px;margin-bottom:7px;cursor:pointer;transition:border-color .12s;}
+.board-card:hover{border-color:var(--b2);}
+
+/* Toast */
+#toast-area{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:6px;pointer-events:none;}
+.toast{background:var(--s1);border:1px solid var(--b2);border-radius:5px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start;min-width:240px;max-width:320px;pointer-events:auto;box-shadow:0 8px 32px rgba(0,0,0,.6);}
+.toast-icon{font-size:14px;flex-shrink:0;}
+.toast-t{font-size:12px;font-weight:600;margin-bottom:2px;letter-spacing:.02em;}
+.toast-b{font-size:10px;color:var(--g1);line-height:1.5;}
+
+/* Auth */
+.auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px;}
+.auth-card{width:100%;max-width:340px;}
+.auth-logo{font-family:var(--font-display);font-size:26px;font-weight:800;letter-spacing:.12em;margin-bottom:4px;}
+.auth-logo span{color:var(--red);}
+.auth-sub{font-size:11px;color:var(--g2);margin-bottom:28px;letter-spacing:.06em;text-transform:uppercase;}
+.auth-tab{flex:1;background:none;border:none;padding:10px 0;font-size:11px;font-weight:600;color:var(--g2);letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid transparent;transition:all .12s;}
+.auth-tab.on{color:var(--text);border-bottom-color:var(--red);}
+
+/* Splash */
+.splash{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.splash-word{display:flex;gap:1px;margin-bottom:16px;}
+.splash-l{font-family:var(--font-display);font-size:52px;font-weight:800;letter-spacing:-1px;color:var(--text);opacity:0;}
+.splash-line{height:1px;background:var(--red);width:0;margin-bottom:14px;transition:width .4s ease;}
+.splash-sub{font-size:9px;letter-spacing:.32em;text-transform:uppercase;color:var(--g2);opacity:0;}
+
+/* Rank */
+.rank-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+
+/* Circular ring SVG */
+.ring-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;}
+.ring-inner{position:absolute;text-align:center;}
+
+/* Transitions - only on specific elements, not whole pages */
+.fade-in{animation:fi .12s ease both;}
+@keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+
+/* Quad selector dropdown */
+.quad-select{position:relative;display:inline-block;}
+.quad-select-btn{background:transparent;border:1px solid var(--b1);border-radius:3px;padding:2px 7px;font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--g2);cursor:pointer;transition:all .12s;white-space:nowrap;}
+.quad-select-btn:hover{border-color:var(--b2);color:var(--g1);}
+.quad-dropdown{position:absolute;right:0;top:calc(100% + 4px);background:var(--s2);border:1px solid var(--b2);border-radius:4px;z-index:50;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5);overflow:hidden;}
+.quad-option{padding:8px 12px;font-size:10px;font-weight:500;cursor:pointer;letter-spacing:.04em;transition:background .1s;border-bottom:1px solid var(--b1);}
+.quad-option:last-child{border-bottom:none;}
+.quad-option:hover{background:var(--s3);}
+.quad-option.active{color:var(--text);}
+
+/* Responsive mobile */
+@media(max-width:600px){
+  .grid-4{grid-template-columns:repeat(2,1fr);}
+  .grid-3{grid-template-columns:1fr;}
+  .board{grid-template-columns:1fr;}
+  .grid-2{grid-template-columns:1fr;}
+  #content{padding:14px;}
+}
+</style>
+</head>
+<body>
+<div id="toast-area"></div>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+// ─── No React.StrictMode (prevents double-render flicker) ───────────────────
+const {useState,useEffect,useRef,useCallback,useMemo,memo}=React;
+
+// ─── Storage ────────────────────────────────────────────────────────────────
+const DB={
+  get:(k,fb)=>{try{const v=localStorage.getItem('kro2_'+k);return v!=null?JSON.parse(v):fb;}catch{return fb;}},
+  set:(k,v)=>{try{localStorage.setItem('kro2_'+k,JSON.stringify(v));}catch{}},
+};
+
+// ─── Toast (imperative, no re-render) ───────────────────────────────────────
+let _tid=0;
+function toast(title,body='',icon='·'){
+  const c=document.getElementById('toast-area');if(!c)return;
+  const el=document.createElement('div');el.className='toast';
+  el.innerHTML=`<div class="toast-icon">${icon}</div><div><div class="toast-t">${title}</div>${body?`<div class="toast-b">${body}</div>`:''}</div>`;
+  c.appendChild(el);
+  setTimeout(()=>el.remove(),3200);
+}
+function notif(title,body){
+  if(Notification.permission==='granted')new Notification('KRONOS · '+title,{body});
+  toast(title,body,'○');
+}
+
+// ─── Audio ──────────────────────────────────────────────────────────────────
+let _actx=null,_nodes=[];
+function audio(){if(!_actx)_actx=new(window.AudioContext||window.webkitAudioContext)();return _actx;}
+function stopAudio(){_nodes.forEach(n=>{try{n.stop();}catch{}});_nodes=[];}
+function alarm(){
+  const c=audio();if(c.state==='suspended')c.resume();
+  [523,659,784,1047].forEach((f,i)=>{
+    const o=c.createOscillator(),g=c.createGain(),t=c.currentTime+i*.15;
+    o.frequency.value=f;o.type='sine';
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.25,t+.04);g.gain.exponentialRampToValueAtTime(.001,t+.35);
+    o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.35);
+  });
+}
+function playSound(type){
+  stopAudio();if(!type)return;
+  const c=audio();if(c.state==='suspended')c.resume();
+  const buf=c.createBuffer(1,c.sampleRate*4,c.sampleRate);
+  const d=buf.getChannelData(0);
+  if(type==='rain'){
+    let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0;
+    for(let i=0;i<d.length;i++){const w=Math.random()*2-1;b0=.99886*b0+w*.0555;b1=.99332*b1+w*.0751;b2=.969*b2+w*.154;b3=.865*b3+w*.311;b4=.55*b4+w*.533;b5=-.7616*b5-w*.017;d[i]=(b0+b1+b2+b3+b4+b5)*0.1;}
+    const s=c.createBufferSource();s.buffer=buf;s.loop=true;
+    const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=2200;
+    const g=c.createGain();g.gain.value=.55;
+    s.connect(f);f.connect(g);g.connect(c.destination);s.start();_nodes.push(s);
+  }else if(type==='ocean'){
+    for(let i=0;i<d.length;i++){const wave=Math.sin(i/c.sampleRate*.12)*.5+.5;d[i]=(Math.random()*2-1)*wave*.25;}
+    const s=c.createBufferSource();s.buffer=buf;s.loop=true;
+    const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=700;
+    const g=c.createGain();g.gain.value=.7;
+    s.connect(f);f.connect(g);g.connect(c.destination);s.start();_nodes.push(s);
+  }else if(type==='fire'){
+    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.random()*.35;
+    const s=c.createBufferSource();s.buffer=buf;s.loop=true;
+    const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=1000;
+    const g=c.createGain();g.gain.value=.5;
+    s.connect(f);f.connect(g);g.connect(c.destination);s.start();_nodes.push(s);
+  }else if(type==='cafe'){
+    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1);
+    const s=c.createBufferSource();s.buffer=buf;s.loop=true;
+    const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=380;f.Q.value=.4;
+    const g=c.createGain();g.gain.value=.2;
+    s.connect(f);f.connect(g);g.connect(c.destination);s.start();_nodes.push(s);
+  }else if(type==='forest'){
+    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.04;
+    const s=c.createBufferSource();s.buffer=buf;s.loop=true;
+    const f=c.createBiquadFilter();f.type='highpass';f.frequency.value=3000;
+    const g=c.createGain();g.gain.value=.4;
+    s.connect(f);f.connect(g);g.connect(c.destination);s.start();_nodes.push(s);
+  }
+}
+
+// ─── XP ─────────────────────────────────────────────────────────────────────
+const RANKS=[
+  {min:0,label:'Principiante',color:'#666'},
+  {min:500,label:'Aprendiz',color:'#1a8a7a'},
+  {min:1500,label:'Practicante',color:'#7b4fa0'},
+  {min:3500,label:'Experto',color:'#d4a017'},
+  {min:7500,label:'Maestro',color:'#c0392b'},
+  {min:15000,label:'Leyenda',color:'#ffd700'},
+];
+function getRank(xp){let r=RANKS[0];for(const x of RANKS)if(xp>=x.min)r=x;return r;}
+
+// ─── Defaults ────────────────────────────────────────────────────────────────
+const EMPTY_TASKS=[
+  {id:1,text:'Revisar propuesta del cliente',energy:'alta',quad:0,done:false,cat:'trabajo',time:'09:00'},
+  {id:2,text:'Planificar objetivos de la semana',energy:'alta',quad:1,done:false,cat:'trabajo',time:'10:00'},
+  {id:3,text:'Leer 20 minutos',energy:'baja',quad:1,done:false,cat:'personal',time:'21:00'},
+];
+const EMPTY_HABITS=[
+  {id:1,name:'Meditación',emoji:'🧘',streak:0,history:[],time:'07:00'},
+  {id:2,name:'Ejercicio',emoji:'💪',streak:0,history:[],time:'07:30'},
+  {id:3,name:'Lectura',emoji:'📖',streak:0,history:[],time:'21:00'},
+  {id:4,name:'Hidratación',emoji:'💧',streak:0,history:[],time:''},
+];
+const EMPTY_GOALS=[
+  {id:1,title:'Proyecto principal',current:0,target:10,unit:'etapas',deadline:'',emoji:'🎯',actions:[]},
+];
+const EMPTY_PROJ=[
+  {id:1,title:'Rediseño identidad',tag:'Diseño',col:'progress',steps:[{id:1,t:'Investigación',d:true},{id:2,t:'Wireframes',d:false}]},
+  {id:2,title:'Campaña Q2',tag:'Marketing',col:'pending',steps:[{id:1,t:'Brief',d:false}]},
+  {id:3,title:'Migración servidor',tag:'Sistema',col:'done',steps:[{id:1,t:'Configuración',d:true}]},
+];
+
+const AREAS=['trabajo','personal','salud','educación','finanzas','hogar','social'];
+const QLABELS=['Urgente · Importante','Importante · No urgente','Urgente · No importante','No urgente · No importante'];
+const SOUNDS=[{id:'rain',label:'Lluvia'},{id:'ocean',label:'Océano'},{id:'fire',label:'Chimenea'},{id:'cafe',label:'Cafetería'},{id:'forest',label:'Bosque'},{id:null,label:'Silencio'}];
+
+// ─── Splash (stable, no state changes during render) ────────────────────────
+function Splash({onDone}){
+  const ref=useRef(null);
+  useEffect(()=>{
+    const el=ref.current;if(!el)return;
+    const letters=el.querySelectorAll('.splash-l');
+    const line=el.querySelector('.splash-line');
+    const sub=el.querySelector('.splash-sub');
+    let t=[];
+    letters.forEach((l,i)=>{t.push(setTimeout(()=>{l.style.opacity='1';l.style.transform='translateY(0)';l.style.transition=`opacity .4s ease ${i*.06}s, transform .4s ease ${i*.06}s`;l.style.transform='none';},100));});
+    t.push(setTimeout(()=>{if(line)line.style.width='80px';},700));
+    t.push(setTimeout(()=>{if(sub){sub.style.opacity='1';sub.style.transition='opacity .4s ease';}},1100));
+    t.push(setTimeout(()=>{if(el){el.style.opacity='0';el.style.transition='opacity .4s ease';}},2400));
+    t.push(setTimeout(()=>onDone(),2800));
+    return()=>t.forEach(clearTimeout);
+  },[]);
+  return(
+    <div ref={ref} className="splash">
+      <div className="splash-word">
+        {'KRONOS'.split('').map((l,i)=>(<span key={i} className="splash-l" style={{transform:'translateY(-20px)'}}>{l}</span>))}
+      </div>
+      <div className="splash-line"/>
+      <div className="splash-sub">Sistema de gestión personal</div>
+    </div>
+  );
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+function Auth({onLogin}){
+  const [mode,setMode]=useState('login');
+  const [form,setForm]=useState({name:'',email:'',pass:''});
+  const [err,setErr]=useState('');
+  const [busy,setBusy]=useState(false);
+
+  const submit=async()=>{
+    setErr('');setBusy(true);
+    await new Promise(r=>setTimeout(r,300));
+    if(!form.email.trim()||!form.pass.trim()){setErr('Completa todos los campos.');setBusy(false);return;}
+    if(form.pass.length<4){setErr('Contraseña mínimo 4 caracteres.');setBusy(false);return;}
+    const users=DB.get('users',{});
+    if(mode==='register'){
+      if(!form.name.trim()){setErr('Ingresa tu nombre.');setBusy(false);return;}
+      if(users[form.email]){setErr('Correo ya registrado.');setBusy(false);return;}
+      users[form.email]={name:form.name,pass:form.pass};
+      DB.set('users',users);
+    }else{
+      const u=users[form.email];
+      if(!u||u.pass!==form.pass){setErr('Credenciales incorrectas.');setBusy(false);return;}
+    }
+    const session={email:form.email,name:users[form.email].name};
+    DB.set('session',session);setBusy(false);onLogin(session);
+  };
+
+  return(
+    <div className="auth-page">
+      <div className="auth-card fade-in">
+        <div className="auth-logo">KR<span>O</span>NOS</div>
+        <div className="auth-sub">Sistema de gestión personal</div>
+        <div className="card">
+          <div style={{display:'flex',borderBottom:'1px solid var(--b1)',marginBottom:20}}>
+            {['login','register'].map(m=>(
+              <button key={m} className={`auth-tab${mode===m?' on':''}`} onClick={()=>{setMode(m);setErr('');setForm({name:'',email:'',pass:''});}}>
+                {m==='login'?'Iniciar sesión':'Registrarse'}
+              </button>
+            ))}
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:12}}>
+            {mode==='register'&&<div><div className="inp-label">Nombre</div><input className="inp" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Tu nombre completo"/></div>}
+            <div><div className="inp-label">Correo electrónico</div><input className="inp" type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} placeholder="correo@ejemplo.com"/></div>
+            <div><div className="inp-label">Contraseña</div><input className="inp" type="password" value={form.pass} onChange={e=>setForm(f=>({...f,pass:e.target.value}))} placeholder="Mínimo 4 caracteres" onKeyDown={e=>e.key==='Enter'&&submit()}/></div>
+            {err&&<div style={{background:'#1a0505',border:'1px solid #3a1010',borderRadius:6,padding:'8px 12px',fontSize:11,color:'#e05050'}}>{err}</div>}
+            <button className="btn btn-red" onClick={submit} disabled={busy} style={{width:'100%',marginTop:4,padding:'11px'}}>
+              {busy?'Verificando...':(mode==='login'?'Entrar':'Crear cuenta')}
+            </button>
+          </div>
+        </div>
+        <div style={{textAlign:'center',marginTop:14,fontSize:11,color:'var(--g2)'}}>Datos guardados localmente en este dispositivo</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Stable small components (memo to prevent re-renders) ────────────────────
+const Chk=memo(({done,onClick})=>(
+  <div className={`chk${done?' on':''}`} onClick={onClick}>
+    {done&&<div className="chk-dot"/>}
+  </div>
+));
+
+const ProgBar=memo(({pct,color='var(--red)',height=3})=>(
+  <div className="pbar" style={{height}}>
+    <div className="pbar-fill" style={{width:`${Math.min(100,pct)}%`,background:color}}/>
+  </div>
+));
+
+// ─── Focus timer hook (stable) ───────────────────────────────────────────────
+function useFocus(){
+  const [time,setTime]=useState(25*60);
+  const [running,setRunning]=useState(false);
+  const [phase,setPhase]=useState('work');
+  const [sessions,setSessions]=useState(0);
+  const ref=useRef({time:25*60,running:false,phase:'work',sessions:0});
+
+  useEffect(()=>{
+    if(!running)return;
+    const iv=setInterval(()=>{
+      ref.current.time-=1;
+      setTime(ref.current.time);
+      if(ref.current.time<=0){
+        clearInterval(iv);
+        alarm();
+        if(ref.current.phase==='work'){
+          const s=ref.current.sessions+1;
+          ref.current.sessions=s;setSessions(s);
+          const brk=s%4===0?15*60:5*60;
+          ref.current.time=brk;ref.current.phase='break';
+          setTime(brk);setPhase('break');setRunning(false);
+          notif('Sesión completada','Tómate un descanso. Lo mereciste.');
+          toast('Sesión completada',`${s} sesión(es) hoy. Descanso: ${s%4===0?'15':'5'} min`,'✓');
+        }else{
+          ref.current.time=25*60;ref.current.phase='work';
+          setTime(25*60);setPhase('work');setRunning(false);
+          toast('Descanso terminado','Nueva sesión lista.');
+        }
+      }
+    },1000);
+    return()=>clearInterval(iv);
+  },[running]);
+
+  const toggle=useCallback(()=>{
+    if(_actx&&_actx.state==='suspended')_actx.resume();
+    ref.current.running=!ref.current.running;
+    setRunning(r=>!r);
+  },[]);
+  const reset=useCallback(()=>{ref.current={time:25*60,running:false,phase:'work',sessions:ref.current.sessions};setTime(25*60);setPhase('work');setRunning(false);},[]);
+  const setDur=useCallback(sec=>{ref.current.time=sec;ref.current.running=false;ref.current.phase='work';setTime(sec);setPhase('work');setRunning(false);},[]);
+
+  return{time,running,phase,sessions,toggle,reset,setDur};
+}
+
+// ─── Streak calc ─────────────────────────────────────────────────────────────
+function calcStreak(history){
+  const today=new Date();let s=0;
+  for(let i=0;i<365;i++){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    if((history||[]).includes(d.toISOString().slice(0,10)))s++;else break;
+  }
+  return s;
+}
+const todayKey=()=>new Date().toISOString().slice(0,10);
+
+const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+
+// ─── Main App ────────────────────────────────────────────────────────────────
+function App(){
+  // One-time init flags
+  const [splash,setSplash]=useState(()=>true);
+  const [user,setUser]=useState(()=>DB.get('session',null));
+  const [lang,setLang]=useState(()=>DB.get('lang','es'));
+  const [tab,setTab]=useState('dashboard');
+  const [sideOpen,setSideOpen]=useState(false);
+  const [now,setNow]=useState(()=>new Date());
+  const [sound,setSound]=useState(null);
+  const [notifOk,setNotifOk]=useState(()=>Notification.permission==='granted');
+
+  const uid=useMemo(()=>user?.email?.replace(/[^a-z0-9]/gi,'_')||'',[user]);
+
+  // Data — initialized once from storage
+  const [tasks,setTasks_]=useState(()=>DB.get('t_'+uid,EMPTY_TASKS));
+  const [habits,setHabits_]=useState(()=>DB.get('h_'+uid,EMPTY_HABITS));
+  const [goals,setGoals_]=useState(()=>DB.get('g_'+uid,EMPTY_GOALS));
+  const [projects,setProjects_]=useState(()=>DB.get('p_'+uid,EMPTY_PROJ));
+  const [pending,setPending_]=useState(()=>DB.get('pe_'+uid,[]));
+  const [reminders,setReminders_]=useState(()=>DB.get('re_'+uid,[]));
+  const [xp,setXp_]=useState(()=>DB.get('xp_'+uid,0));
+
+  // Persist on change
+  const setTasks=useCallback(v=>{setTasks_(p=>{const n=typeof v==='function'?v(p):v;DB.set('t_'+uid,n);return n;});},[uid]);
+  const setHabits=useCallback(v=>{setHabits_(p=>{const n=typeof v==='function'?v(p):v;DB.set('h_'+uid,n);return n;});},[uid]);
+  const setGoals=useCallback(v=>{setGoals_(p=>{const n=typeof v==='function'?v(p):v;DB.set('g_'+uid,n);return n;});},[uid]);
+  const setProjects=useCallback(v=>{setProjects_(p=>{const n=typeof v==='function'?v(p):v;DB.set('p_'+uid,n);return n;});},[uid]);
+  const setPending=useCallback(v=>{setPending_(p=>{const n=typeof v==='function'?v(p):v;DB.set('pe_'+uid,n);return n;});},[uid]);
+  const setReminders=useCallback(v=>{setReminders_(p=>{const n=typeof v==='function'?v(p):v;DB.set('re_'+uid,n);return n;});},[uid]);
+  const addXP=useCallback((amt,reason)=>{setXp_(x=>{const n=x+amt;DB.set('xp_'+uid,n);toast('+'+amt+' XP',reason,'·');return n;});},[uid]);
+
+  const focus=useFocus();
+
+  // Clock — only updates time string, not full re-render
+  useEffect(()=>{
+    const t=setInterval(()=>setNow(new Date()),10000);
+    return()=>clearInterval(t);
+  },[]);
+
+  // Notification checker
+  useEffect(()=>{
+    if(!uid)return;
+    const check=()=>{
+      const now2=Date.now();
+      reminders.forEach(r=>{
+        if(r.done||!r.datetime)return;
+        const diff=new Date(r.datetime)-now2;
+        if(diff>0&&diff<60000)notif('Recordatorio',r.text);
+      });
+      const h=new Date().getHours();
+      if(h===8){
+        const tk=todayKey();
+        const undone=habits.filter(h=>!(h.history||[]).includes(tk));
+        if(undone.length)notif('Buenos días','Tienes '+undone.length+' hábito(s) pendiente(s).');
+      }
+      pending.forEach(p=>{
+        if(p.done||!p.deadline)return;
+        const d=new Date(p.deadline);d.setHours(0,0,0,0);
+        const t2=new Date();t2.setHours(0,0,0,0);
+        if(d.getTime()===t2.getTime())notif('Pendiente vence hoy',p.text);
+      });
+    };
+    check();
+    const iv=setInterval(check,60000);
+    return()=>clearInterval(iv);
+  },[reminders,habits,pending,uid]);
+
+  // Sound effect
+  useEffect(()=>{playSound(sound);},[sound]);
+
+  const tk=todayKey();
+  const rank=getRank(xp);
+  const doneT=useMemo(()=>tasks.filter(t=>t.done).length,[tasks]);
+  const doneH=useMemo(()=>habits.filter(h=>(h.history||[]).includes(tk)).length,[habits,tk]);
+  const pendCt=useMemo(()=>pending.filter(p=>!p.done).length,[pending]);
+  const recCt=useMemo(()=>reminders.filter(r=>!r.done&&r.datetime&&new Date(r.datetime)>new Date()).length,[reminders]);
+
+  const requestNotif=async()=>{const r=await Notification.requestPermission();setNotifOk(r==='granted');if(r==='granted')toast('Notificaciones activadas','Recibirás alertas puntualmente.');};
+
+  const NAV=[
+    {id:'dashboard',icon:'◈',label:'Dashboard'},
+    {id:'tasks',icon:'○',label:'Tareas'},
+    {id:'habits',icon:'◇',label:'Hábitos'},
+    {id:'goals',icon:'◎',label:'Objetivos'},
+    {id:'projects',icon:'▣',label:'Proyectos'},
+    {id:'focus',icon:'◐',label:'Enfoque'},
+    {id:'pending',icon:'△',label:'Pendientes',badge:pendCt},
+    {id:'reminders',icon:'◻',label:'Recordatorios',badge:recCt},
+    {id:'achievements',icon:'★',label:'Logros'},
+    {id:'analysis',icon:'≋',label:'Análisis'},
+  ];
+
+  const PAGE_TITLE={dashboard:'Dashboard',tasks:'Tareas',habits:'Hábitos',goals:'Objetivos',projects:'Proyectos',focus:'Enfoque',pending:'Pendientes',reminders:'Recordatorios',achievements:'Logros',analysis:'Análisis'};
+
+  if(splash)return <Splash onDone={()=>setSplash(false)}/>;
+  if(!user)return <Auth onLogin={s=>{setUser(s);DB.set('session',s);}}/>;
+
+  return(
+    <div id="app">
+      {/* Sidebar */}
+      <div id="sidebar" className={sideOpen?'open':''} onMouseEnter={()=>setSideOpen(true)} onMouseLeave={()=>setSideOpen(false)}>
+        <div className="sidebar-logo" onClick={()=>setTab('dashboard')}>{sideOpen?'KRONOS':'K'}</div>
+        {NAV.map(n=>(
+          <div key={n.id} className={`nav-item${tab===n.id?' active':''}`} onClick={()=>setTab(n.id)}>
+            <span className="nav-icon">{n.icon}</span>
+            <span className="nav-label">{n.label}</span>
+            {n.badge>0&&<span className="nav-badge">{n.badge}</span>}
+          </div>
+        ))}
+        <div className="sidebar-bottom">
+          <div className="nav-item" onClick={()=>{if(!notifOk)requestNotif();}}>
+            <span className="nav-icon">{notifOk?'◉':'◯'}</span>
+            <span className="nav-label">{notifOk?'Notificaciones on':'Activar notif.'}</span>
+          </div>
+          <div className="nav-item" onClick={()=>{DB.set('session',null);setUser(null);}}>
+            <span className="nav-icon">←</span>
+            <span className="nav-label">Cerrar sesión</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main */}
+      <div id="main">
+        {/* Topbar */}
+        <div id="topbar">
+          <div className="page-title">{PAGE_TITLE[tab]||tab}</div>
+          <div className="topbar-items">
+            <select className="lang-select" value={lang} onChange={e=>{setLang(e.target.value);DB.set('lang',e.target.value);}}>
+              <option value="es">ES</option>
+              <option value="en">EN</option>
+            </select>
+            <div className="xp-pill">{xp} XP · {rank.label}</div>
+            <button className="top-btn" title="Notificaciones" onClick={()=>{if(!notifOk)requestNotif();else toast('Notificaciones','Ya están activas.');}} style={{position:'relative'}}>
+              ◻{!notifOk&&<span style={{position:'absolute',top:5,right:5,width:5,height:5,background:'var(--red)',borderRadius:'50%'}}/>}
+            </button>
+            <div className="time-display">{now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}</div>
+            <div className="user-chip" onClick={()=>{DB.set('session',null);setUser(null);}}>
+              <div className="avatar">{user.name[0].toUpperCase()}</div>
+              <div className="user-name">{user.name}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div id="content">
+          {tab==='dashboard'&&<DashTab tasks={tasks} habits={habits} pending={pending} reminders={reminders} xp={xp} rank={rank} doneT={doneT} doneH={doneH} tk={tk} setTab={setTab} user={user} setTasks={setTasks} setHabits={setHabits} addXP={addXP}/>}
+          {tab==='tasks'&&<TasksTab tasks={tasks} setTasks={setTasks} addXP={addXP}/>}
+          {tab==='habits'&&<HabitsTab habits={habits} setHabits={setHabits} tk={tk} addXP={addXP}/>}
+          {tab==='goals'&&<GoalsTab goals={goals} setGoals={setGoals} addXP={addXP}/>}
+          {tab==='projects'&&<ProjectsTab projects={projects} setProjects={setProjects}/>}
+          {tab==='focus'&&<FocusTab focus={focus} sound={sound} setSound={setSound}/>}
+          {tab==='pending'&&<PendingTab pending={pending} setPending={setPending} addXP={addXP}/>}
+          {tab==='reminders'&&<RemindersTab reminders={reminders} setReminders={setReminders} notifOk={notifOk} requestNotif={requestNotif}/>}
+          {tab==='achievements'&&<AchievementsTab tasks={tasks} habits={habits} goals={goals} xp={xp} focus={focus}/>}
+          {tab==='analysis'&&<AnalysisTab tasks={tasks} habits={habits} xp={xp} rank={rank} doneT={doneT} doneH={doneH}/>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Dashboard ───────────────────────────────────────────────────────────────
+const DashTab=memo(({tasks,habits,pending,reminders,xp,rank,doneT,doneH,tk,setTab,user,setTasks,setHabits,addXP})=>{
+  const hour=new Date().getHours();
+  const energy=hour<8?3:hour<10?8:hour<12?9:hour<14?6:hour<16?4:hour<18?7:5;
+  const nextRank=RANKS.find(r=>r.min>xp);
+  const xpPct=nextRank?((xp-rank.min)/(nextRank.min-rank.min)*100):100;
+  const motivs=['Tu constancia de hoy define tus resultados de mañana.','Cada tarea completada es una victoria. Sigue adelante.','La disciplina supera al talento cuando el talento no es disciplino.','Hoy es el mejor momento para avanzar en tus objetivos.'];
+  const motiv=motivs[new Date().getDay()%motivs.length];
+
+  return(
+    <div className="fade-in">
+      {/* Greeting */}
+      <div style={{marginBottom:20,paddingBottom:16,borderBottom:'1px solid var(--b1)'}}>
+        <div style={{fontSize:18,fontWeight:600,marginBottom:4}}>Bienvenido, {user.name}</div>
+        <div style={{fontSize:12,color:'var(--g1)',fontStyle:'italic'}}>"{motiv}"</div>
+      </div>
+
+      {/* KPIs */}
+      <div className="grid-4" style={{marginBottom:20}}>
+        {[
+          {label:'Tareas hoy',value:`${doneT}/${tasks.length}`,pct:tasks.length?doneT/tasks.length*100:0,color:'var(--red)'},
+          {label:'Hábitos hoy',value:`${doneH}/${habits.length}`,pct:habits.length?doneH/habits.length*100:0,color:'var(--teal)'},
+          {label:'XP acumulado',value:xp,pct:xpPct,color:'var(--gold)'},
+          {label:'Energía ahora',value:`${energy}/10`,pct:energy*10,color:'#7b4fa0'},
+        ].map(k=>(
+          <div key={k.label} className="card" style={{position:'relative',overflow:'hidden'}}>
+            <div style={{position:'absolute',top:0,left:0,right:0,height:'2px',background:k.color}}/>
+            <div className="kpi-value" style={{color:k.color}}>{k.value}</div>
+            <div className="kpi-label">{k.label}</div>
+            <div style={{marginTop:10}}><ProgBar pct={k.pct} color={k.color}/></div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid-2" style={{marginBottom:20}}>
+        {/* Upcoming tasks */}
+        <div className="card">
+          <div className="section-label">Tareas prioritarias</div>
+          {tasks.filter(t=>!t.done).slice(0,4).map((t,i)=>(
+            <div key={t.id}>
+              {i>0&&<div className="div" style={{margin:'0'}}/>}
+              <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',cursor:'pointer'}} onClick={()=>{setTasks(ts=>ts.map(x=>x.id===t.id?{...x,done:true}:x));addXP(20,'Tarea completada');}}>
+                <Chk done={t.done}/>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13}}>{t.text}</div>
+                  <div style={{fontSize:11,color:'var(--g1)',marginTop:2}}>{t.time} · {t.cat}</div>
+                </div>
+                <div style={{fontSize:9,padding:'2px 6px',borderRadius:3,background:'var(--g3)',color:'var(--g1)',textTransform:'uppercase',letterSpacing:'.05em'}}>{t.energy}</div>
+              </div>
+            </div>
+          ))}
+          {tasks.filter(t=>!t.done).length===0&&<div style={{color:'var(--g2)',fontSize:12,padding:'12px 0'}}>Todas las tareas completadas.</div>}
+        </div>
+
+        {/* Rank & XP */}
+        <div className="card">
+          <div className="section-label">Rango actual</div>
+          <div style={{padding:'12px 0'}}>
+            <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:16}}>
+              <div style={{width:48,height:48,borderRadius:10,background:'var(--s3)',border:'1px solid var(--b2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22}}>
+                {rank.label==='Leyenda'?'◈':rank.label==='Maestro'?'◉':rank.label==='Experto'?'◎':rank.label==='Practicante'?'◇':rank.label==='Aprendiz'?'○':'·'}
+              </div>
+              <div>
+                <div style={{fontWeight:700,fontSize:16,color:rank.color,marginBottom:3}}>{rank.label}</div>
+                <div style={{fontSize:11,color:'var(--g1)'}}>{xp} XP{nextRank?` · ${nextRank.min-xp} para subir`:' · Rango máximo'}</div>
+              </div>
+            </div>
+            <ProgBar pct={xpPct} color={rank.color} height={4}/>
+          </div>
+          <div className="div"/>
+          <div className="section-label">Cómo ganar XP</div>
+          {[['Completar tarea','20 XP'],['Completar hábito','15 XP'],['Sesión de enfoque','30 XP'],['Pendiente completado','10 XP']].map(([a,x])=>(
+            <div key={a} style={{display:'flex',justifyContent:'space-between',fontSize:11,padding:'4px 0',color:'var(--g1)'}}>
+              <span>{a}</span><span style={{color:rank.color,fontWeight:600}}>{x}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Habits quick */}
+      <div className="card">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+          <div className="section-label" style={{marginBottom:0}}>Hábitos de hoy</div>
+          <button className="btn btn-ghost btn-sm" onClick={()=>setTab('habits')}>Ver todos →</button>
+        </div>
+        <div className="grid-4">
+          {habits.map(h=>{
+            const done=(h.history||[]).includes(tk);
+            return(
+              <div key={h.id} className="card-inner" style={{opacity:done?.6:1,cursor:done?'default':'pointer',borderColor:done?'var(--teal)':'var(--b1)',transition:'all .15s'}}
+                onClick={()=>{
+                  if(done)return;
+                  const hist=[...(h.history||[]),tk];const s=calcStreak(hist);
+                  setHabits(hs=>hs.map(x=>x.id===h.id?{...x,history:hist,streak:s}:x));
+                  addXP(15,'Hábito: '+h.name);
+                }}>
+                <div style={{fontSize:20,marginBottom:6}}>{h.emoji}</div>
+                <div style={{fontSize:12,fontWeight:500,marginBottom:4}}>{h.name}</div>
+                <div style={{fontSize:11,color:done?'var(--teal)':'var(--g2)'}}>{done?'✓ Hecho':'Pendiente'}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Alerts */}
+      {(pending.filter(p=>!p.done).length>0||reminders.filter(r=>!r.done&&r.datetime&&new Date(r.datetime)>new Date()).length>0)&&(
+        <div className="grid-2" style={{marginTop:14}}>
+          {pending.filter(p=>!p.done).length>0&&(
+            <div className="card" style={{borderColor:'var(--gold)',cursor:'pointer'}} onClick={()=>setTab('pending')}>
+              <div style={{display:'flex',alignItems:'center',gap:12}}>
+                <span style={{fontSize:20,color:'var(--gold)'}}>△</span>
+                <div><div style={{fontWeight:600,fontSize:14}}>{pending.filter(p=>!p.done).length} pendiente(s)</div><div style={{fontSize:11,color:'var(--g1)'}}>Requieren atención</div></div>
+              </div>
+            </div>
+          )}
+          {reminders.filter(r=>!r.done&&r.datetime&&new Date(r.datetime)>new Date()).length>0&&(
+            <div className="card" style={{borderColor:'var(--teal)',cursor:'pointer'}} onClick={()=>setTab('reminders')}>
+              <div style={{display:'flex',alignItems:'center',gap:12}}>
+                <span style={{fontSize:20,color:'var(--teal)'}}>◻</span>
+                <div><div style={{fontWeight:600,fontSize:14}}>{reminders.filter(r=>!r.done&&r.datetime&&new Date(r.datetime)>new Date()).length} recordatorio(s)</div><div style={{fontSize:11,color:'var(--g1)'}}>Próximos</div></div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+});
+
+// ─── Tasks ───────────────────────────────────────────────────────────────────
+const TasksTab=memo(({tasks,setTasks,addXP})=>{
+  const [input,setInput]=useState('');
+  const [cat,setCat]=useState('trabajo');
+  const [quad,setQuad]=useState(0);
+  const [filter,setFilter]=useState('todas');
+  const [busy,setBusy]=useState(false);
+
+  const add=async()=>{
+    if(!input.trim())return;setBusy(true);
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:150,messages:[{role:'user',content:`Extrae texto, energía (alta/media/baja), hora HH:MM. Solo JSON: {"text":"...","energy":"...","time":"HH:MM"}\n"${input}"`}]})});
+      const data=await res.json();
+      const p=JSON.parse(data.content?.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
+      setTasks(ts=>[...ts,{id:Date.now(),...p,cat,quad,done:false}]);
+    }catch{setTasks(ts=>[...ts,{id:Date.now(),text:input,energy:'media',time:'09:00',cat,quad,done:false}]);}
+    setInput('');setBusy(false);
+  };
+
+  const filtered=filter==='todas'?tasks:tasks.filter(t=>t.cat===filter);
+  return(
+    <div className="fade-in">
+      {/* Add */}
+      <div className="card" style={{marginBottom:14}}>
+        <div style={{display:'flex',gap:10,marginBottom:input?12:0}}>
+          <input className="inp" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&add()} placeholder="Describe tu tarea en lenguaje natural..." style={{flex:1}}/>
+          <button className="btn btn-red" onClick={add} disabled={busy||!input.trim()}>{busy?'...':'Agregar'}</button>
+        </div>
+        {input&&<div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+          {AREAS.map(a=>(<button key={a} onClick={()=>setCat(a)} className="btn btn-sm" style={{background:cat===a?'var(--red)':'transparent',color:cat===a?'#fff':'var(--g1)',border:`1px solid ${cat===a?'var(--red)':'var(--b1)'}`,textTransform:'capitalize'}}>{a}</button>))}
+        </div>}
+      </div>
+
+      {/* Filter */}
+      <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14}}>
+        {['todas',...AREAS].map(a=>(<button key={a} onClick={()=>setFilter(a)} className="btn btn-sm" style={{background:filter===a?'var(--s3)':'transparent',color:filter===a?'var(--text)':'var(--g2)',border:`1px solid ${filter===a?'var(--b2)':'var(--b1)'}`,textTransform:'capitalize'}}>{a}</button>))}
+      </div>
+
+      {/* Matrix */}
+      <div className="grid-2" style={{marginBottom:14}}>
+        {[0,1,2,3].map(q=>(
+          <div key={q} className="card">
+            <div style={{fontSize:10,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--g2)',marginBottom:10}}>{QLABELS[q]}</div>
+            {filtered.filter(t=>t.quad===q).map(t=>(
+              <div key={t.id} style={{display:'flex',gap:8,marginBottom:8,opacity:t.done?.35:1}}>
+                <Chk done={t.done} onClick={()=>{setTasks(ts=>ts.map(x=>x.id===t.id?{...x,done:!x.done}:x));if(!t.done)addXP(20,'Tarea completada');}}/>
+                <div style={{flex:1,fontSize:12,textDecoration:t.done?'line-through':'none',lineHeight:1.5,paddingTop:1}}>{t.text}</div>
+                <button onClick={()=>setTasks(ts=>ts.filter(x=>x.id!==t.id))} style={{background:'none',border:'none',color:'var(--g3)',fontSize:14,lineHeight:1}}>×</button>
+              </div>
+            ))}
+            {filtered.filter(t=>t.quad===q).length===0&&<div style={{fontSize:11,color:'var(--g3)',fontStyle:'italic'}}>Sin tareas</div>}
+          </div>
+        ))}
+      </div>
+
+      {/* List */}
+      <div className="card">
+        <div style={{display:'flex',justifyContent:'space-between',marginBottom:14}}>
+          <div className="section-label" style={{marginBottom:0}}>Lista completa</div>
+          <div style={{fontSize:11,color:'var(--g2)'}}>{filtered.length} tarea(s)</div>
+        </div>
+        {filtered.map((t,i)=>(
+          <div key={t.id}>
+            {i>0&&<div className="div" style={{margin:'0'}}/>}
+            <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',opacity:t.done?.4:1}}>
+              <Chk done={t.done} onClick={()=>{setTasks(ts=>ts.map(x=>x.id===t.id?{...x,done:!x.done}:x));if(!t.done)addXP(20,'Tarea completada');}}/>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,textDecoration:t.done?'line-through':'none'}}>{t.text}</div>
+                <div style={{fontSize:10,color:'var(--g2)',marginTop:2}}>{t.time} · {t.cat} · {QLABELS[t.quad]?.split('·')[0].trim()}</div>
+              </div>
+              <div style={{fontSize:9,padding:'2px 6px',borderRadius:3,background:'var(--g3)',color:'var(--g1)',textTransform:'uppercase'}}>{t.energy}</div>
+              <button onClick={()=>setTasks(ts=>ts.filter(x=>x.id!==t.id))} style={{background:'none',border:'none',color:'var(--g3)',fontSize:14,lineHeight:1}}>×</button>
+            </div>
+          </div>
+        ))}
+        {filtered.length===0&&<div style={{color:'var(--g2)',fontSize:12,padding:'12px 0',textAlign:'center'}}>Sin tareas en esta área</div>}
+      </div>
+    </div>
+  );
+});
+
+// ─── Habits ──────────────────────────────────────────────────────────────────
+const HabitsTab=memo(({habits,setHabits,tk,addXP})=>{
+  const [showAdd,setShowAdd]=useState(false);
+  const [newH,setNewH]=useState({name:'',emoji:'○',time:''});
+  const EMOJIS=['○','◇','△','□','◎','◈','◉','·','—','≡','≋','≈'];
+
+  return(
+    <div className="fade-in">
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+        <div>
+          <div style={{fontSize:15,fontWeight:600,marginBottom:2}}>Hábitos</div>
+          <div style={{fontSize:11,color:'var(--g1)'}}>{habits.filter(h=>(h.history||[]).includes(tk)).length} de {habits.length} completados hoy</div>
+        </div>
+        <button className="btn btn-red" onClick={()=>setShowAdd(v=>!v)}>{showAdd?'✕ Cancelar':'+ Nuevo'}</button>
+      </div>
+
+      {showAdd&&(
+        <div className="card fade-in" style={{marginBottom:14}}>
+          <div className="section-label">Nuevo hábito</div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
+            {EMOJIS.map(e=>(<span key={e} onClick={()=>setNewH(h=>({...h,emoji:e}))} style={{fontSize:16,cursor:'pointer',padding:'4px 8px',borderRadius:6,background:newH.emoji===e?'var(--s3)':'transparent',border:`1px solid ${newH.emoji===e?'var(--b2)':'transparent'}`,color:newH.emoji===e?'var(--text)':'var(--g1)'}}>{e}</span>))}
+          </div>
+          <div style={{display:'flex',gap:10,marginBottom:10}}>
+            <input className="inp" value={newH.name} onChange={e=>setNewH(h=>({...h,name:e.target.value}))} placeholder="Nombre del hábito" style={{flex:2}}/>
+            <input className="inp" value={newH.time} onChange={e=>setNewH(h=>({...h,time:e.target.value}))} placeholder="Hora (opcional)" style={{flex:1}}/>
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button className="btn btn-red btn-sm" disabled={!newH.name.trim()} onClick={()=>{setHabits(hs=>[...hs,{id:Date.now(),...newH,streak:0,history:[]}]);setNewH({name:'',emoji:'○',time:''});setShowAdd(false);toast('Hábito creado','Empieza hoy mismo.');}} >Guardar</button>
+            <button className="btn btn-ghost btn-sm" onClick={()=>setShowAdd(false)}>Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+        {habits.map(h=>{
+          const done=(h.history||[]).includes(tk);
+          const last7=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-i);return(h.history||[]).includes(d.toISOString().slice(0,10));}).reverse();
+          return(
+            <div key={h.id} className="card" style={{borderColor:done?'var(--teal)':'var(--b1)',transition:'border-color .2s'}}>
+              <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:12}}>
+                <div style={{display:'flex',gap:10,alignItems:'center'}}>
+                  <div style={{width:36,height:36,borderRadius:8,background:done?'var(--teal)11':'var(--s2)',border:`1px solid ${done?'var(--teal)':'var(--b1)'}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,color:done?'var(--teal)':'var(--g1)',transition:'all .2s'}}>{h.emoji}</div>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:600,marginBottom:2}}>{h.name}</div>
+                    <div style={{fontSize:11}}><span style={{color:'var(--gold)',fontWeight:700}}>{h.streak}</span> <span style={{color:'var(--g2)'}}>días de racha</span></div>
+                  </div>
+                </div>
+                <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                  {!done?<button className="btn btn-ghost btn-sm" onClick={()=>{const hist=[...(h.history||[]),tk];const s=calcStreak(hist);setHabits(hs=>hs.map(x=>x.id===h.id?{...x,history:hist,streak:s}:x));addXP(15,'Hábito: '+h.name);}}>Hecho</button>:<span style={{fontSize:11,color:'var(--teal)',fontWeight:600}}>✓</span>}
+                  <button onClick={()=>setHabits(hs=>hs.filter(x=>x.id!==h.id))} style={{background:'none',border:'none',color:'var(--g3)',cursor:'pointer',fontSize:14}}>×</button>
+                </div>
+              </div>
+              {/* Week bars */}
+              <div style={{display:'flex',gap:3,marginBottom:10}}>
+                {['L','M','M','J','V','S','D'].map((d,i)=>(
+                  <div key={i} style={{flex:1,textAlign:'center'}}>
+                    <div style={{fontSize:8,color:'var(--g3)',marginBottom:3}}>{d}</div>
+                    <div style={{height:16,borderRadius:3,background:last7[i]?'var(--red)':'var(--s3)'}}/>
+                  </div>
+                ))}
+              </div>
+              {/* 63-day heatmap */}
+              <div className="hmap">
+                {[...Array(63)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-(62-i));const k=d.toISOString().slice(0,10);return(<div key={i} className={`hmap-cell${(h.history||[]).includes(k)?' done':''}`}/>);})}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+});
+
+// ─── Goals ───────────────────────────────────────────────────────────────────
+const GoalsTab=memo(({goals,setGoals,addXP})=>{
+  const [showAdd,setShowAdd]=useState(false);
+  const [ng,setNg]=useState({title:'',current:'0',target:'',unit:'',deadline:'',emoji:'◎',actions:[]});
+  const [newA,setNewA]=useState('');
+  const EMOJIS=['◎','◈','◉','△','○','◇','□','★','·'];
+
+  return(
+    <div className="fade-in">
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+        <div><div style={{fontSize:15,fontWeight:600,marginBottom:2}}>Objetivos</div><div style={{fontSize:11,color:'var(--g1)'}}>Seguimiento cuantitativo</div></div>
+        <button className="btn btn-red" onClick={()=>setShowAdd(v=>!v)}>{showAdd?'✕ Cancelar':'+ Nuevo'}</button>
+      </div>
+
+      {showAdd&&(
+        <div className="card fade-in" style={{marginBottom:14}}>
+          <div className="section-label">Nuevo objetivo</div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
+            {EMOJIS.map(e=>(<span key={e} onClick={()=>setNg(g=>({...g,emoji:e}))} style={{fontSize:16,cursor:'pointer',padding:'4px 8px',borderRadius:6,background:ng.emoji===e?'var(--s3)':'transparent',border:`1px solid ${ng.emoji===e?'var(--b2)':'transparent'}`,color:ng.emoji===e?'var(--text)':'var(--g1)'}}>{e}</span>))}
+          </div>
+          <input className="inp" value={ng.title} onChange={e=>setNg(g=>({...g,title:e.target.value}))} placeholder="Título del objetivo" style={{marginBottom:10}}/>
+          <div className="grid-3" style={{marginBottom:10}}>
+            <div><div className="inp-label">Progreso actual</div><input className="inp" type="number" value={ng.current} min="0" onChange={e=>setNg(g=>({...g,current:e.target.value}))}/></div>
+            <div><div className="inp-label">Meta total</div><input className="inp" type="number" value={ng.target} min="1" onChange={e=>setNg(g=>({...g,target:e.target.value}))} placeholder="100"/></div>
+            <div><div className="inp-label">Unidad</div><input className="inp" value={ng.unit} onChange={e=>setNg(g=>({...g,unit:e.target.value}))} placeholder="km, págs…"/></div>
+          </div>
+          <div style={{marginBottom:12}}><div className="inp-label">Fecha límite (opcional)</div><input className="inp" type="date" value={ng.deadline} onChange={e=>setNg(g=>({...g,deadline:e.target.value}))}/></div>
+          <div style={{marginBottom:14}}>
+            <div className="inp-label">Acciones / pasos</div>
+            <div className="card-inner">
+              {ng.actions.map((a,i)=>(<div key={i} style={{display:'flex',gap:8,padding:'5px 0',fontSize:12,borderBottom:i<ng.actions.length-1?'1px solid var(--b1)':'none',alignItems:'center'}}>
+                <span style={{color:'var(--g2)'}}>·</span><span style={{flex:1}}>{a.text}</span>
+                <button onClick={()=>setNg(g=>({...g,actions:g.actions.filter((_,j)=>j!==i)}))} style={{background:'none',border:'none',color:'var(--g3)',cursor:'pointer'}}>×</button>
+              </div>))}
+              <input className="inp" value={newA} onChange={e=>setNewA(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&newA.trim()){setNg(g=>({...g,actions:[...g.actions,{id:Date.now(),text:newA,done:false}]}));setNewA('');}}} placeholder="Agrega un paso y presiona Enter" style={{marginTop:ng.actions.length?8:0,fontSize:12}}/>
+            </div>
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button className="btn btn-red btn-sm" disabled={!ng.title.trim()||!ng.target} onClick={()=>{const t=parseFloat(ng.target),c=parseFloat(ng.current)||0;setGoals(gs=>[...gs,{id:Date.now(),title:ng.title,current:Math.min(c,t),target:t,unit:ng.unit||'unidades',deadline:ng.deadline||'',emoji:ng.emoji,actions:ng.actions}]);setNg({title:'',current:'0',target:'',unit:'',deadline:'',emoji:'◎',actions:[]});setShowAdd(false);toast('Objetivo creado','Definido y registrado.');}}>Crear objetivo</button>
+            <button className="btn btn-ghost btn-sm" onClick={()=>setShowAdd(false)}>Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      <div className="grid-2">
+        {goals.map(g=>{
+          const pct=Math.min(100,Math.round((g.current/g.target)*100));
+          const raw=g.deadline?new Date(g.deadline):null;
+          const days=raw&&!isNaN(raw)?Math.ceil((raw-new Date())/86400000):null;
+          const doneA=g.actions?.filter(a=>a.done).length||0;
+          return(
+            <div key={g.id} className="card">
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
+                <div style={{display:'flex',gap:10,alignItems:'center',flex:1,paddingRight:12}}>
+                  <span style={{fontSize:20,color:'var(--g1)'}}>{g.emoji}</span>
+                  <div>
+                    <div style={{fontSize:14,fontWeight:600,marginBottom:3}}>{g.title}</div>
+                    {days!==null&&<div style={{fontSize:11,color:days<=3?'var(--red)':days<=7?'var(--gold)':'var(--g2)'}}>{days>0?days+' días restantes':days===0?'Vence hoy':'Plazo vencido'}</div>}
+                  </div>
+                </div>
+                <div style={{textAlign:'right',display:'flex',alignItems:'flex-start',gap:8}}>
+                  <div>
+                    <div style={{fontSize:22,fontWeight:700,lineHeight:1,color:pct>=100?'var(--teal)':'var(--text)'}}>{pct}%</div>
+                    <div style={{fontSize:10,color:'var(--g2)',marginTop:2}}>{g.current}/{g.target} {g.unit}</div>
+                  </div>
+                  <button onClick={()=>setGoals(gs=>gs.filter(x=>x.id!==g.id))} style={{background:'none',border:'none',color:'var(--g3)',cursor:'pointer',fontSize:14}}>×</button>
+                </div>
+              </div>
+              <ProgBar pct={pct} color={pct>=100?'var(--teal)':'var(--red)'} height={4}/>
+              {g.actions?.length>0&&(
+                <div style={{marginTop:12}}>
+                  <div style={{fontSize:10,color:'var(--g2)',marginBottom:6}}>Acciones: {doneA}/{g.actions.length}</div>
+                  {g.actions.map(a=>(
+                    <div key={a.id} onClick={()=>setGoals(gs=>gs.map(x=>x.id===g.id?{...x,actions:x.actions.map(t=>t.id===a.id?{...t,done:!t.done}:t)}:x))} style={{display:'flex',gap:8,padding:'5px 0',cursor:'pointer',borderTop:'1px solid var(--b1)',opacity:a.done?.4:1}}>
+                      <Chk done={a.done}/>
+                      <div style={{fontSize:12,textDecoration:a.done?'line-through':'none'}}>{a.text}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{marginTop:12}}>
+                <input placeholder={`Actualizar (${g.unit})…`} style={{width:'100%',background:'var(--s2)',border:'1px solid var(--b1)',borderRadius:6,padding:'7px 10px',color:'var(--text)',fontSize:12,outline:'none',fontFamily:'Inter'}}
+                  onKeyDown={e=>{if(e.key==='Enter'){const n=parseFloat(e.target.value);if(!isNaN(n)){setGoals(gs=>gs.map(x=>x.id===g.id?{...x,current:Math.min(n,x.target)}:x));addXP(10,'Progreso registrado');e.target.value='';}}}}/>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {goals.length===0&&!showAdd&&<div style={{textAlign:'center',padding:'48px',color:'var(--g2)'}}>Sin objetivos. Toca "+ Nuevo".</div>}
+    </div>
+  );
+});
+
+// ─── Projects (Kanban) ───────────────────────────────────────────────────────
+const ProjectsTab=memo(({projects,setProjects})=>{
+  const [showAdd,setShowAdd]=useState(false);
+  const [np,setNp]=useState({title:'',tag:'',col:'pending',steps:[]});
+  const [ns,setNs]=useState('');
+  const COLS=[{id:'pending',label:'Pendiente',color:'#666'},{id:'progress',label:'En progreso',color:'var(--gold)'},{id:'done',label:'Finalizado',color:'var(--teal)'}];
+
+  return(
+    <div className="fade-in">
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+        <div><div style={{fontSize:15,fontWeight:600,marginBottom:2}}>Proyectos</div><div style={{fontSize:11,color:'var(--g1)'}}>Tablero Kanban</div></div>
+        <button className="btn btn-red" onClick={()=>setShowAdd(v=>!v)}>{showAdd?'✕':'+ Nuevo proyecto'}</button>
+      </div>
+      {showAdd&&(
+        <div className="card fade-in" style={{marginBottom:14}}>
+          <div className="section-label">Nuevo proyecto</div>
+          <div className="grid-2" style={{marginBottom:10}}>
+            <input className="inp" value={np.title} onChange={e=>setNp(p=>({...p,title:e.target.value}))} placeholder="Título del proyecto"/>
+            <input className="inp" value={np.tag} onChange={e=>setNp(p=>({...p,tag:e.target.value}))} placeholder="Etiqueta (ej: Diseño)"/>
+          </div>
+          <div style={{display:'flex',gap:8,marginBottom:10}}>
+            {COLS.map(c=>(<button key={c.id} onClick={()=>setNp(p=>({...p,col:c.id}))} className="btn btn-sm" style={{background:np.col===c.id?'var(--s3)':'transparent',color:np.col===c.id?'var(--text)':'var(--g2)',border:`1px solid ${np.col===c.id?'var(--b2)':'var(--b1)'}`}}>{c.label}</button>))}
+          </div>
+          <div style={{marginBottom:12}}>
+            <div className="inp-label">Pasos</div>
+            <div className="card-inner">
+              {np.steps.map((s,i)=>(<div key={i} style={{display:'flex',gap:8,padding:'5px 0',fontSize:12,borderBottom:i<np.steps.length-1?'1px solid var(--b1)':'none',alignItems:'center'}}><span style={{color:'var(--g2)'}}>·</span><span style={{flex:1}}>{s.t}</span><button onClick={()=>setNp(p=>({...p,steps:p.steps.filter((_,j)=>j!==i)}))} style={{background:'none',border:'none',color:'var(--g3)',cursor:'pointer'}}>×</button></div>))}
+              <input className="inp" value={ns} onChange={e=>setNs(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&ns.trim()){setNp(p=>({...p,steps:[...p.steps,{id:Date.now(),t:ns,d:false}]}));setNs('');}}} placeholder="Agrega un paso y presiona Enter" style={{marginTop:np.steps.length?8:0,fontSize:12}}/>
+            </div>
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button className="btn btn-red btn-sm" disabled={!np.title.trim()} onClick={()=>{setProjects(ps=>[...ps,{id:Date.now(),...np}]);setNp({title:'',tag:'',col:'pending',steps:[]});setShowAdd(false);}}>Crear</button>
+            <button className="btn btn-ghost btn-sm" onClick={()=>setShowAdd(false)}>Cancelar</button>
+          </div>
+        </div>
+      )}
+      <div className="board">
+        {COLS.map(col=>{
+          const items=projects.filter(p=>p.col===col.id);
+          return(
+            <div key={col.id} className="board-col">
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <div style={{width:7,height:7,borderRadius:'50%',background:col.color}}/>
+                  <div style={{fontSize:12,fontWeight:600,color:col.color}}>{col.label}</div>
+                </div>
+                <div style={{background:'var(--s3)',borderRadius:10,padding:'2px 7px',fontSize:10,color:'var(--g2)'}}>{items.length}</div>
+              </div>
+              {items.map(p=>{
+                const doneS=p.steps?.filter(s=>s.d).length||0;
+                const totS=p.steps?.length||0;
+                return(
+                  <div key={p.id} className="board-card">
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
+                      {p.tag&&<div className="tag" style={{background:'var(--s3)',color:'var(--g1)'}}>{p.tag}</div>}
+                      <button onClick={()=>setProjects(ps=>ps.filter(x=>x.id!==p.id))} style={{background:'none',border:'none',color:'var(--g3)',cursor:'pointer',marginLeft:'auto',fontSize:13}}>×</button>
+                    </div>
+                    <div style={{fontSize:13,fontWeight:600,marginBottom:8}}>{p.title}</div>
+                    {totS>0&&<>
+                      <div style={{fontSize:11,color:'var(--g2)',marginBottom:5}}>{doneS}/{totS} pasos</div>
+                      <ProgBar pct={totS?doneS/totS*100:0} color={col.color} height={2}/>
+                      <div style={{marginTop:8}}>
+                        {p.steps.map(s=>(<div key={s.id} onClick={()=>setProjects(ps=>ps.map(x=>x.id===p.id?{...x,steps:x.steps.map(t=>t.id===s.id?{...t,d:!t.d}:t)}:x))} style={{display:'flex',gap:7,padding:'4px 0',cursor:'pointer',opacity:s.d?.45:1,borderTop:'1px solid var(--b1)'}}>
+                          <Chk done={s.d}/>
+                          <div style={{fontSize:11,textDecoration:s.d?'line-through':'none'}}>{s.t}</div>
+                        </div>))}
+                      </div>
+                    </>}
+                    <div style={{display:'flex',gap:5,marginTop:10}}>
+                      {COLS.filter(c=>c.id!==col.id).map(c=>(<button key={c.id} onClick={()=>setProjects(ps=>ps.map(x=>x.id===p.id?{...x,col:c.id}:x))} style={{flex:1,background:'none',border:`1px solid ${c.color}44`,borderRadius:5,padding:'5px 0',fontSize:10,color:c.color,cursor:'pointer',fontFamily:'Inter',letterSpacing:'.02em'}}>→ {c.label}</button>))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+});
+
+// ─── Focus ───────────────────────────────────────────────────────────────────
+const FocusTab=memo(({focus,sound,setSound})=>{
+  const {time,running,phase,sessions,toggle,reset,setDur}=focus;
+  const total=phase==='work'?25*60:5*60;
+  const pct=(1-(time/total))*100;
+  const r=88;const circ=2*Math.PI*r;
+  const dash=circ*pct/100;
+
+  return(
+    <div className="fade-in">
+      <div className="grid-2">
+        <div className="card" style={{textAlign:'center',padding:'32px 24px'}}>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:'.14em',textTransform:'uppercase',color:phase==='work'?'var(--red)':'var(--teal)',marginBottom:24}}>{phase==='work'?'Sesión de trabajo':'Tiempo de descanso'}</div>
+          <div style={{position:'relative',width:200,height:200,margin:'0 auto 24px'}}>
+            <svg width="200" height="200" style={{position:'absolute',top:0,left:0,transform:'rotate(-90deg)'}}>
+              <circle cx="100" cy="100" r={r} fill="none" stroke="var(--s3)" strokeWidth="8"/>
+              <circle cx="100" cy="100" r={r} fill="none" stroke={phase==='work'?'var(--red)':'var(--teal)'} strokeWidth="8"
+                strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" style={{transition:'stroke-dasharray .8s linear'}}/>
+            </svg>
+            <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+              <div className="focus-time" style={{color:running?'var(--text)':'var(--g1)',transition:'color .3s'}}>{fmt(time)}</div>
+              <div style={{fontSize:11,color:'var(--g2)',marginTop:4,letterSpacing:'.06em'}}>{running?'EN CURSO':'EN ESPERA'}</div>
+            </div>
+          </div>
+          <div style={{display:'flex',gap:10,justifyContent:'center',marginBottom:20}}>
+            <button className="btn btn-red" onClick={toggle} style={{minWidth:100}}>{running?'Pausar':'Iniciar'}</button>
+            <button className="btn btn-ghost" onClick={reset}>Reiniciar</button>
+          </div>
+          <div style={{display:'flex',gap:8,justifyContent:'center'}}>
+            {[[25*60,'25'],[45*60,'45'],[60*60,'60'],[90*60,'90']].map(([s,l])=>(
+              <button key={l} onClick={()=>setDur(s)} className="btn btn-ghost btn-sm"
+                style={{background:time===s&&!running?'var(--s3)':'transparent',color:time===s&&!running?'var(--text)':'var(--g2)',borderColor:time===s&&!running?'var(--b2)':'var(--b1)'}}>
+                {l} min
+              </button>
+            ))}
+          </div>
+          {sessions>0&&<div style={{marginTop:18,fontSize:11,color:'var(--g2)'}}>Sesiones completadas hoy: {sessions}</div>}
+        </div>
+
+        <div className="card">
+          <div className="section-label">Ambiente sonoro</div>
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            {SOUNDS.map(s=>(
+              <div key={String(s.id)} onClick={()=>setSound(x=>x===s.id?null:s.id)} style={{display:'flex',alignItems:'center',gap:12,padding:'11px 14px',borderRadius:8,cursor:'pointer',background:sound===s.id?'var(--s2)':'transparent',border:`1px solid ${sound===s.id?'var(--b2)':'transparent'}`,transition:'all .15s'}}>
+                <div style={{width:8,height:8,borderRadius:'50%',background:sound===s.id?'var(--red)':'var(--g3)',transition:'background .15s',flexShrink:0}}/>
+                <div style={{fontSize:13,color:sound===s.id?'var(--text)':'var(--g1)'}}>{s.label}</div>
+                {sound===s.id&&<div style={{marginLeft:'auto',fontSize:10,color:'var(--red)',letterSpacing:'.06em'}}>REPRODUCIENDO</div>}
+              </div>
+            ))}
+          </div>
+
+          <div className="div"/>
+          <div className="section-label">Metodología Pomodoro</div>
+          <div style={{display:'flex',flexDirection:'column',gap:8,fontSize:12,color:'var(--g1)'}}>
+            {[['1.','Selecciona una tarea específica'],['2.','Trabaja 25 min sin interrupciones'],['3.','Descansa 5 min'],['4.','Cada 4 sesiones, descanso de 15 min']].map(([n,t])=>(
+              <div key={n} style={{display:'flex',gap:10}}><span style={{color:'var(--g3)',width:16,flexShrink:0}}>{n}</span><span>{t}</span></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// ─── Pending ─────────────────────────────────────────────────────────────────
+const PendingTab=memo(({pending,setPending,addXP})=>{
+  const [showAdd,setShowAdd]=useState(false);
+  const [np,setNp]=useState({text:'',deadline:''});
+  return(
+    <div className="fade-in">
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+        <div><div style={{fontSize:15,fontWeight:600,marginBottom:2}}>Pendientes</div><div style={{fontSize:11,color:'var(--g1)'}}>{pending.filter(p=>!p.done).length} activo(s)</div></div>
+        <button className="btn btn-red" onClick={()=>setShowAdd(v=>!v)}>{showAdd?'✕':'+ Agregar'}</button>
+      </div>
+      {showAdd&&(
+        <div className="card fade-in" style={{marginBottom:14}}>
+          <input className="inp" value={np.text} onChange={e=>setNp(p=>({...p,text:e.target.value}))} placeholder="Descripción del pendiente…" style={{marginBottom:10}}/>
+          <div style={{marginBottom:12}}><div className="inp-label">Fecha límite (opcional)</div><input className="inp" type="date" value={np.deadline} onChange={e=>setNp(p=>({...p,deadline:e.target.value}))}/></div>
+          <div style={{display:'flex',gap:8}}>
+            <button className="btn btn-red btn-sm" disabled={!np.text.trim()} onClick={()=>{setPending(ps=>[...ps,{id:Date.now(),...np,done:false,auto:false}]);setNp({text:'',deadline:''});setShowAdd(false);}}>Guardar</button>
+            <button className="btn btn-ghost btn-sm" onClick={()=>setShowAdd(false)}>Cancelar</button>
+          </div>
+        </div>
+      )}
+      <div className="card">
+        {pending.length===0&&<div style={{color:'var(--g2)',fontSize:12,padding:'20px 0',textAlign:'center'}}>Sin pendientes. Todo en orden.</div>}
+        {pending.map((p,i)=>(
+          <div key={p.id}>
+            {i>0&&<div className="div" style={{margin:'0'}}/>}
+            <div style={{display:'flex',alignItems:'center',gap:10,padding:'11px 0',opacity:p.done?.4:1}}>
+              <Chk done={p.done} onClick={()=>{setPending(ps=>ps.map(x=>x.id===p.id?{...x,done:!x.done}:x));if(!p.done)addXP(10,'Pendiente completado');}}/>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,textDecoration:p.done?'line-through':'none'}}>{p.auto&&<span style={{fontSize:9,color:'var(--gold)',marginRight:6,fontWeight:600}}>AUTO</span>}{p.text}</div>
+                {p.deadline&&<div style={{fontSize:10,color:'var(--g2)',marginTop:2}}>Vencía: {new Date(p.deadline).toLocaleDateString('es-ES',{day:'numeric',month:'short'})}</div>}
+              </div>
+              <button onClick={()=>setPending(ps=>ps.filter(x=>x.id!==p.id))} style={{background:'none',border:'none',color:'var(--g3)',cursor:'pointer',fontSize:14}}>×</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
+
+// ─── Reminders ───────────────────────────────────────────────────────────────
+const RemindersTab=memo(({reminders,setReminders,notifOk,requestNotif})=>{
+  const [showAdd,setShowAdd]=useState(false);
+  const [nr,setNr]=useState({text:'',datetime:'',repeat:'ninguna'});
+  const upcoming=reminders.filter(r=>!r.done&&r.datetime&&new Date(r.datetime)>new Date()).sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
+  return(
+    <div className="fade-in">
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+        <div><div style={{fontSize:15,fontWeight:600,marginBottom:2}}>Recordatorios</div><div style={{fontSize:11,color:'var(--g1)'}}>{upcoming.length} próximo(s)</div></div>
+        <div style={{display:'flex',gap:8}}>
+          {!notifOk&&<button className="btn btn-ghost btn-sm" onClick={requestNotif}>Activar alertas</button>}
+          <button className="btn btn-red" onClick={()=>setShowAdd(v=>!v)}>{showAdd?'✕':'+ Nuevo'}</button>
+        </div>
+      </div>
+      {showAdd&&(
+        <div className="card fade-in" style={{marginBottom:14}}>
+          <input className="inp" value={nr.text} onChange={e=>setNr(r=>({...r,text:e.target.value}))} placeholder="¿Qué quieres recordar?" style={{marginBottom:10}}/>
+          <div className="grid-2" style={{marginBottom:12}}>
+            <div><div className="inp-label">Fecha y hora</div><input className="inp" type="datetime-local" value={nr.datetime} onChange={e=>setNr(r=>({...r,datetime:e.target.value}))}/></div>
+            <div><div className="inp-label">Repetir</div><select className="inp" value={nr.repeat} onChange={e=>setNr(r=>({...r,repeat:e.target.value}))}>
+              <option value="ninguna">Sin repetición</option>
+              <option value="diario">Diario</option>
+              <option value="semanal">Semanal</option>
+              <option value="mensual">Mensual</option>
+            </select></div>
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button className="btn btn-red btn-sm" disabled={!nr.text.trim()} onClick={()=>{setReminders(rs=>[...rs,{id:Date.now(),...nr,done:false}]);setNr({text:'',datetime:'',repeat:'ninguna'});setShowAdd(false);toast('Recordatorio creado','Recibirás una notificación.');}}>Guardar</button>
+            <button className="btn btn-ghost btn-sm" onClick={()=>setShowAdd(false)}>Cancelar</button>
+          </div>
+        </div>
+      )}
+      {upcoming.length>0&&(
+        <div style={{marginBottom:14}}>
+          <div className="section-label">Próximos</div>
+          <div className="card">
+            {upcoming.map((r,i)=>(
+              <div key={r.id}>
+                {i>0&&<div className="div" style={{margin:'0'}}/>}
+                <div style={{display:'flex',gap:12,padding:'11px 0',alignItems:'center'}}>
+                  <div style={{fontSize:16,color:'var(--g1)'}}>◻</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:500}}>{r.text}</div>
+                    <div style={{fontSize:11,color:'var(--g2)',marginTop:2}}>{new Date(r.datetime).toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}{r.repeat!=='ninguna'&&' · '+r.repeat}</div>
+                  </div>
+                  <button onClick={()=>setReminders(rs=>rs.filter(x=>x.id!==r.id))} style={{background:'none',border:'none',color:'var(--g3)',cursor:'pointer',fontSize:14}}>×</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="section-label">Todos</div>
+      <div className="card">
+        {reminders.length===0&&<div style={{color:'var(--g2)',fontSize:12,padding:'20px 0',textAlign:'center'}}>Sin recordatorios. Toca "+ Nuevo".</div>}
+        {reminders.map((r,i)=>(
+          <div key={r.id}>
+            {i>0&&<div className="div" style={{margin:'0'}}/>}
+            <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',opacity:r.done?.4:1}}>
+              <Chk done={r.done} onClick={()=>setReminders(rs=>rs.map(x=>x.id===r.id?{...x,done:!x.done}:x))}/>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,textDecoration:r.done?'line-through':'none'}}>{r.text}</div>
+                {r.datetime&&<div style={{fontSize:10,color:'var(--g2)',marginTop:2}}>{new Date(r.datetime).toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}{r.repeat!=='ninguna'&&' · '+r.repeat}</div>}
+              </div>
+              <button onClick={()=>setReminders(rs=>rs.filter(x=>x.id!==r.id))} style={{background:'none',border:'none',color:'var(--g3)',cursor:'pointer',fontSize:14}}>×</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
+
+// ─── Achievements ────────────────────────────────────────────────────────────
+const AchievementsTab=memo(({tasks,habits,goals,xp,focus})=>{
+  const ACHV=[
+    {id:'a1',icon:'○',title:'Primera tarea',desc:'Completa tu primera tarea',check:()=>tasks.some(t=>t.done)},
+    {id:'a2',icon:'◇',title:'Racha de 7 días',desc:'Mantén un hábito 7 días seguidos',check:()=>habits.some(h=>h.streak>=7)},
+    {id:'a3',icon:'△',title:'500 XP',desc:'Acumula 500 puntos de experiencia',check:()=>xp>=500},
+    {id:'a4',icon:'□',title:'1000 XP',desc:'Acumula 1000 puntos',check:()=>xp>=1000},
+    {id:'a5',icon:'◎',title:'Objetivo al 100%',desc:'Completa un objetivo al 100%',check:()=>goals.some(g=>g.current>=g.target)},
+    {id:'a6',icon:'◈',title:'5 sesiones',desc:'Completa 5 sesiones de enfoque',check:()=>focus.sessions>=5},
+    {id:'a7',icon:'◉',title:'Racha de 21 días',desc:'Mantén un hábito 21 días',check:()=>habits.some(h=>h.streak>=21)},
+    {id:'a8',icon:'★',title:'Leyenda',desc:'Alcanza el rango Leyenda',check:()=>xp>=15000},
+  ];
+  const unlocked=ACHV.filter(a=>a.check()).length;
+  return(
+    <div className="fade-in">
+      <div style={{marginBottom:20,paddingBottom:16,borderBottom:'1px solid var(--b1)'}}>
+        <div style={{fontSize:15,fontWeight:600,marginBottom:4}}>Logros</div>
+        <div style={{fontSize:12,color:'var(--g1)',marginBottom:10}}>{unlocked} de {ACHV.length} desbloqueados</div>
+        <ProgBar pct={unlocked/ACHV.length*100} color='var(--gold)' height={4}/>
+      </div>
+      <div className="grid-2">
+        {ACHV.map(a=>{
+          const ok=a.check();
+          return(
+            <div key={a.id} className="card" style={{opacity:ok?1:.45,borderColor:ok?'var(--b2)':'var(--b1)',transition:'all .2s'}}>
+              <div style={{display:'flex',gap:12,alignItems:'center'}}>
+                <div style={{width:40,height:40,borderRadius:8,background:ok?'var(--s2)':'var(--s3)',border:`1px solid ${ok?'var(--b2)':'var(--b1)'}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,color:ok?'var(--text)':'var(--g3)',flexShrink:0}}>
+                  {ok?a.icon:'·'}
+                </div>
+                <div>
+                  <div style={{fontSize:13,fontWeight:600,marginBottom:2}}>{a.title}</div>
+                  <div style={{fontSize:11,color:'var(--g2)'}}>{a.desc}</div>
+                  {ok&&<div style={{fontSize:10,color:'var(--teal)',marginTop:4,fontWeight:600}}>Desbloqueado</div>}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+});
+
+// ─── Analysis ────────────────────────────────────────────────────────────────
+const AnalysisTab=memo(({tasks,habits,xp,rank,doneT,doneH})=>{
+  const [result,setResult]=useState('');const [busy,setBusy]=useState(false);
+  const runAI=async()=>{
+    setBusy(true);setResult('');
+    const hour=new Date().getHours();
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:`Eres un coach de productividad de élite. Análisis conciso (4-5 puntos) con recomendaciones accionables y profesionales. Sin emojis. En español formal.\nDatos: Hora ${hour}:00 | Tareas ${doneT}/${tasks.length} | Hábitos ${doneH}/${habits.length} | XP ${xp} | Rango: ${rank.label}`}]})});
+      const data=await res.json();setResult(data.content?.map(c=>c.text||'').join('')||'—');
+    }catch{setResult('Error de conexión.');}
+    setBusy(false);
+  };
+
+  return(
+    <div className="fade-in">
+      <div className="grid-2" style={{marginBottom:14}}>
+        <div className="card">
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:result||busy?16:0}}>
+            <div><div className="section-label">Diagnóstico IA</div><div style={{fontSize:13,color:'var(--g1)'}}>Análisis personalizado de tu productividad</div></div>
+            <button className="btn btn-red btn-sm" onClick={runAI} disabled={busy}>{busy?'Analizando...':'Ejecutar'}</button>
+          </div>
+          {(result||busy)&&<>
+            <div className="div"/>
+            <div style={{fontSize:13,lineHeight:1.8,color:busy?'var(--g1)':'var(--text)',fontStyle:busy?'italic':'normal'}}>{busy?'Procesando datos…':result}</div>
+          </>}
+        </div>
+        <div className="card">
+          <div className="section-label">Métricas del día</div>
+          {[['Tareas completadas',`${doneT} / ${tasks.length}`],['Hábitos completados',`${doneH} / ${habits.length}`],['XP total acumulado',xp],['Rango actual',rank.label]].map(([l,v])=>(
+            <div key={l} style={{display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:'1px solid var(--b1)',fontSize:13}}>
+              <span style={{color:'var(--g1)'}}>{l}</span><span style={{fontWeight:600}}>{v}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="card" style={{marginBottom:14}}>
+        <div className="section-label">Actividad semanal — tareas</div>
+        <div style={{display:'flex',alignItems:'flex-end',gap:8,height:80}}>
+          {[{d:'L',v:8},{d:'M',v:6},{d:'X',v:9},{d:'J',v:7},{d:'V',v:5},{d:'S',v:3},{d:'D',v:0}].map((item,i)=>(
+            <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:5}}>
+              <div style={{width:'100%',borderRadius:4,background:i===6?'var(--s3)':'var(--red)',opacity:i===6?.3:1,height:`${(item.v/10)*64}px`,transition:'height .3s ease'}}/>
+              <div style={{fontSize:10,color:'var(--g2)'}}>{item.d}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="section-label">Distribución por área</div>
+        {AREAS.map(a=>{
+          const count=tasks.filter(t=>t.cat===a).length;
+          const done=tasks.filter(t=>t.cat===a&&t.done).length;
+          if(!count)return null;
+          return(
+            <div key={a} style={{display:'flex',alignItems:'center',gap:14,padding:'9px 0',borderBottom:'1px solid var(--b1)'}}>
+              <div style={{width:72,fontSize:12,color:'var(--g1)',textTransform:'capitalize'}}>{a}</div>
+              <div style={{flex:1}}><ProgBar pct={done/count*100} color='var(--red)' height={3}/></div>
+              <div style={{fontSize:11,color:'var(--g2)',width:32,textAlign:'right'}}>{done}/{count}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+});
+
+// ─── Mount (no StrictMode = no double-render flicker) ────────────────────────
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
